@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     if quad_type == 'triangle':
         ref_elt_P1 = elements.TriangleP1(quad_order=quad_order)
-        ref_elt_P2 = elements.TriangleP2(quad_order=quad_order)
+        ref_elt_P2 = elements.TriangleP3(quad_order=quad_order)
         mesh = mesher.UnitSquareTri(nx=n_side, ny=n_side, reference=ref_elt_P1)
         u1h = function_spaces.P2(mesh, ref_elt_P2, idx=0)
         u2h = function_spaces.P2(mesh, ref_elt_P2, idx=1)

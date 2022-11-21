@@ -337,10 +337,10 @@ class TriangleP3(Triangle):
         else:
             raise Exception('Invalid polynomial index')
     
-    def basis(self, idx_d, coeffs, xi, eta):
+    def basis(self, coeffs, xi, eta):
         val = 0.0
         for i in range(self.n_dof):
-            val += coeffs[i]*self.P(i, idx_d, xi, eta)
+            val += coeffs[i]*self.P(i, xi, eta)
         return val
     
     def d_basis(self, idx_d, coeffs, xi, eta):
@@ -349,7 +349,7 @@ class TriangleP3(Triangle):
             val += coeffs[i]*self.dP(i, idx_d, xi, eta)
         return val
     
-    def N(self, idx, p):
+    def N(self, idx,  p, dp):
         if idx == 0:
             return p(0, 0)
         elif idx == 1:
@@ -357,19 +357,19 @@ class TriangleP3(Triangle):
         elif idx == 2:
             return p(0, 1)
         elif idx == 3:
-            return p(0.5, 0)
-        elif idx == 4:
-            return p(0.5, 0.5)
-        elif idx == 5:
-            return p(0, 0.5)
-        elif idx == 6:
             return p(1/3, 1/3)
+        elif idx == 4:
+            return dp(0, 0, 0)
+        elif idx == 5:
+            return dp(0, 0, 1)
+        elif idx == 6:
+            return dp(1, 0, 0)
         elif idx == 7:
-            return 
+            return dp(1, 0, 1)
         elif idx == 8:
-            return
+            return dp(0, 1, 0)
         elif idx == 9:
-            return
+            return dp(0, 1, 1)
         else:
             raise Exception('Invalid dof index')
     
@@ -377,7 +377,7 @@ class TriangleP3(Triangle):
         V = np.zeros((self.n_dof, self.n_dof))
         for i in range(self.n_dof):
             for j in range(self.n_dof):
-                V[i, j] = self.N(i, lambda xi, eta: self.P(j, xi, eta))
+                V[i, j] = self.N(i, lambda xi, eta: self.P(j, xi, eta), lambda xi, eta, idx_d: self.dP(j, idx_d, xi, eta))
         self.iV = np.linalg.inv(V)
     
     def phi(self, idx_phi, xi, eta):
@@ -485,3 +485,7 @@ class QuadP1(femto.FiniteElement):
                 raise Exception("Invalid coordinate index")
         else:
             raise Exception("Invalid shape function index")
+
+if __name__ == '__main__':
+    Element = TriangleP3()
+    print(Element.iV)
