@@ -238,7 +238,154 @@ class TriangleP2(Triangle):
     def d_phi(self, idx_phi, idx_x, xi, eta):
         return self.d_basis(idx_x, self.iV[idx_phi], xi, eta)
 
-
+class TriangleP3(Triangle):
+    def __init__(self, quad_order = 3, quad_type = 'area', affine = True):
+        n_dof = 10
+        self.n_dof = n_dof
+        self.compute_inverse_Vandermonde()
+        super().__init__(n_dof, quad_order, quad_type, affine)
+    
+    def P(self, idx, xi, eta):
+        if idx == 0:
+            return 1.0
+        elif idx == 1:
+            return xi
+        elif idx == 2:
+            return eta
+        elif idx == 3:
+            return xi*eta
+        elif idx == 4:
+            return xi*xi
+        elif idx == 5:
+            return eta*eta
+        elif idx == 6:
+            return xi*xi*eta
+        elif idx == 7:
+            return xi*eta*eta
+        elif idx == 8:
+            return xi*xi*xi
+        elif idx == 9:
+            return eta*eta*eta
+        else:
+            raise Exception('Invalid polynomial index')
+    
+    def dP(self, idx_p, idx_d, xi, eta):
+        if idx_p == 0:
+            if idx_d == 0:
+                return 0.0
+            elif idx_d == 1:
+                return 0.0
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 1:
+            if idx_d == 0:
+                return 1.0
+            elif idx_d == 1:
+                return 0.0
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 2:
+            if idx_d == 0:
+                return 0.0
+            elif idx_d == 1:
+                return 1.0
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 3:
+            if idx_d == 0:
+                return eta
+            elif idx_d == 1:
+                return xi
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 4:
+            if idx_d == 0:
+                return 2*xi
+            elif idx_d == 1:
+                return 0.0
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 5:
+            if idx_d == 0:
+                return 0.0
+            elif idx_d == 1:
+                return 2*eta
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 6:
+            if idx_d == 0:
+                return 2*xi*eta
+            elif idx_d == 1:
+                return 2*xi*xi
+            else:
+                raise Exception('Invalid dimension for derivative')
+        elif idx_p == 7:
+            if idx_d == 0:
+                return 2*eta*eta
+            elif idx_d == 1:
+                return 2*xi*eta
+        elif idx_p == 8:
+            if idx_d == 0:
+                return 3*xi*xi
+            elif idx_d == 1:
+                return 0
+        elif idx_p == 9:
+            if idx_d == 0:
+                return 0
+            elif idx_d == 1:
+                return 3*eta*eta
+        else:
+            raise Exception('Invalid polynomial index')
+    
+    def basis(self, idx_d, coeffs, xi, eta):
+        val = 0.0
+        for i in range(self.n_dof):
+            val += coeffs[i]*self.P(i, idx_d, xi, eta)
+        return val
+    
+    def d_basis(self, idx_d, coeffs, xi, eta):
+        val = 0.0
+        for i in range(self.n_dof):
+            val += coeffs[i]*self.dP(i, idx_d, xi, eta)
+        return val
+    
+    def N(self, idx, p):
+        if idx == 0:
+            return p(0, 0)
+        elif idx == 1:
+            return p(1, 0)
+        elif idx == 2:
+            return p(0, 1)
+        elif idx == 3:
+            return p(0.5, 0)
+        elif idx == 4:
+            return p(0.5, 0.5)
+        elif idx == 5:
+            return p(0, 0.5)
+        elif idx == 6:
+            return p(1/3, 1/3)
+        elif idx == 7:
+            return 
+        elif idx == 8:
+            return
+        elif idx == 9:
+            return
+        else:
+            raise Exception('Invalid dof index')
+    
+    def compute_inverse_Vandermonde(self):
+        V = np.zeros((self.n_dof, self.n_dof))
+        for i in range(self.n_dof):
+            for j in range(self.n_dof):
+                V[i, j] = self.N(i, lambda xi, eta: self.P(j, xi, eta))
+        self.iV = np.linalg.inv(V)
+    
+    def phi(self, idx_phi, xi, eta):
+        return self.basis(self.iV[idx_phi], xi, eta)
+    
+    def d_phi(self, idx_phi, idx_x, xi, eta):
+        return self.d_basis(idx_x, self.iV[idx_phi], xi, eta)
+        
 class QuadP1(femto.FiniteElement):
     def __init__(self, quad_order=2, quad_type='gauss', affine=True):
         dim = 2

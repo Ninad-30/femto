@@ -22,9 +22,6 @@ def create_mesh_1d_uniform(n_elt):
 
     # For non uniform
 
-
-    
-
 def create_dof(nodes, dbc):
     # n_nodes = np.shape(nodes)[0]
     # dof = np.array([np.nan for _ in range(n_nodes)])
