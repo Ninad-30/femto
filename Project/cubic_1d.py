@@ -291,6 +291,8 @@ def _find_element(x, nodes, elements):
 
 
 def fe_interpolate(nodes, elements, dof, x):
+    #Not linear interpolation, and do a cubic one.
+    #Using the unused DOFs. Interpolation based on the DOFs.
     elt_id = _find_element(x, nodes, elements)
     n1, _, _f, n2 = elements[elt_id]
     n1, n2 = int(n1/3), int(n2/3)
@@ -310,7 +312,7 @@ if __name__ == "__main__":
     n_quad = 3
     n_test = 101
 
-    n_elts = np.array([25])
+    n_elts = np.array([4])
     errs_L2 = []
     for n_elt in n_elts:
         nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
@@ -328,6 +330,7 @@ if __name__ == "__main__":
     print(x)
 
     plt.plot(x, ua)
+    plt.plot(x, np.sin(2*np.pi*x))
     plt.xlabel('x')
     plt.ylabel('u(x)')
     
