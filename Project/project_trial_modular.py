@@ -10,7 +10,7 @@ pi = np.pi
 def create_mesh_1d_uniform(n_elt):
     # For uniform
     N = n_elt - 1
-    mesh = np.linspace(0, 1, 2* n_elt -1)
+    
     nodes = np.linspace(0, 1, N+2)
     elements = []
     for i in range(0, 2*N+2, 2):
@@ -347,24 +347,28 @@ def fe_interpolate_unarranged(nodes, elements, dof, x, n_quad = 100):
 if __name__ == "__main__":
     n_quad = 3
     n_test = 101
-    n_elts = np.array([4, 9, 16, 25, 36, 49])
+    n_elts = np.array([4])
     errs_L2 = []
     for n_elt in n_elts:
         nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
+        print(nodes)
+        print(elements)
         uh = solve_bvp(nodes, elements, dbc, n_quad)
         ua = np.zeros(np.shape(uh)[0]+2)
+        x = np.linspace(0, 1, n_elts[0] + 2)
         ua[1:-1] = uh
-        # ua = ua[::2]
-        errs_L2.append(compute_L2_error(nodes, elements, ua[::2], n_test))
+        ua = ua[::2]
+        # errs_L2.append(compute_L2_error(nodes, elements, ua[::2], n_test))
+    
     errs_L2 = np.array(errs_L2)
     print('ua = ', ua[::2])
     print(u_exact(nodes))
-    plt.loglog(1/n_elts, errs_L2, 'ko-', lw=2, label='FEM')
-    plt.loglog(1/n_elts, (1/n_elts)**2, 'ro--', lw=2, label='h^2')
-    plt.xlabel('Mesh size (h)')
-    plt.ylabel('L2 error')
-    plt.legend()
-    plt.show()
+    # plt.loglog(1/n_elts, errs_L2, 'ko-', lw=2, label='FEM')
+    # plt.loglog(1/n_elts, (1/n_elts)**2, 'ro--', lw=2, label='h^2')
+    # plt.xlabel('Mesh size (h)')
+    # plt.ylabel('L2 error')
+    # plt.legend()
+    # plt.show()
     # n_elts = np.array([3])
     # errs_L2 = []
     # for n_elt in n_elts:
@@ -377,13 +381,13 @@ if __name__ == "__main__":
     # print(fe_interpolate_unarranged(nodes, elements, uh, 0.5))
     
     
+    print(f"ua = {ua}")
+    x = np.linspace(0,1,n_elts[0]+1)
+    plt.plot(x, ua, label='u(x)')
+    plt.xlabel('x')
+    plt.ylabel('u(x)')
+    plt.legend()
+    # plt.plot(mesh, uh)
+    plt.show()
     # print(f"ua = {ua}")
-    # x = np.linspace(0,1,n_elts[0]+1)
-    # plt.plot(x, ua, label='u(x)')
-    # plt.xlabel('x')
-    # plt.ylabel('u(x)')
-    # plt.legend()
-    # # plt.plot(mesh, uh)
-    # plt.show()
-    # # print(f"ua = {ua}")
-    # # plot_fem_soln(nodes, elements, uh)
+    # plot_fem_soln(nodes, elements, uh)

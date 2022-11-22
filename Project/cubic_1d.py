@@ -10,10 +10,10 @@ pi = np.pi
 def create_mesh_1d_uniform(n_elt):
     # For uniform
     N = n_elt - 1
-    mesh = np.linspace(0, 1, 3*n_elt + 1)
+    
     nodes = np.linspace(0, 1, N+2)
     elements = []
-    for i in range(0, 3*n_elt, 3):
+    for i in range(0, 3*N+3, 3):
         elements.append([i, i+1, i+2, i+3])
     dbc = [[0, 0.0], [N+1, 0.0]]
 
@@ -146,22 +146,22 @@ def integrate_GL_quad(g, a=0, b=1, n_quad=2):
 
 def phi(idx, xi):
     if idx == 0:
-        return -9/2*(xi*xi*xi-2*xi*xi-7/9*xi)
+        return (-9/2)*(xi*xi*xi -2*xi*xi + 11/9*xi -2/9)
     elif idx == 1:
-        return 9/2*(3*xi*xi*xi-5*xi*xi+2*xi)
+        return 27/2*(xi*xi*xi - (5/3)*xi*xi + (2/3)*xi)
     elif idx == 2:
-        return -27/2*(xi*xi*xi-4/3*xi*xi+1/3*xi)
+        return -27/2*(xi*xi*xi - (4/3)*xi*xi + (1/3)*xi)
     elif idx == 3:
-        return 9/2*(xi*xi*xi-xi*xi+2/9*xi)
+        return (9/2)*(xi)*(xi-(1/3))*(xi-(2/3))
     else:
         raise Exception("Invalid index")
 
 
 def d_phi(idx, xi):
     if idx == 0:
-        return -9/2*(3*xi*xi-4*xi-7/9)
+        return -9/2*(3*xi*xi-4*xi + 11/9)
     elif idx == 1:
-        return 27/2*(9*xi*xi-10*xi+2)
+        return 27/2*(3*xi*xi-(10/3)*xi+2/3)
     elif idx == 2:
         return -27/2*(3*xi*xi-8/3*xi+1/3)
     elif idx == 3:
@@ -172,7 +172,7 @@ def d_phi(idx, xi):
 
 def f(x):
     # return -50*(2-5*x)*np.exp(-5*x)
-    return 4*pi*pi*np.cos(2*pi*x)
+    return 4*pi*pi*np.sin(2*pi*x)
 
 
 def u_exact(x):
@@ -234,7 +234,7 @@ def compute_load_vector(nodes, elements, n_quad):
         fe = _compute_reference_load_vector(xe, n_quad)
         he =  nodes[int(elt[3]/3)] - nodes[int(elt[0]/3)]
 
-        for i in range(3):
+        for i in range(4):
             F[elt[i]] += he*fe[i]
     print(f"shape of F = {F.shape}")
     return F
@@ -257,7 +257,7 @@ def solve_bvp(nodes, elements, dbc, n_quad):
     print(f"N = {N}")
     U_dbc = dof[1:N]
     # U = spsolve(K[1:N, 1:N], F[1:N] - K[1:N, 1:N] @ U_dbc)
-    u = spsolve(K[1:N, 1:N], F[1:N])
+    u = spsolve(K[1:N+1, 1:N+1], F[1:N+1])
 
     
     return u
@@ -283,8 +283,8 @@ def plot_fem_soln(nodes, elements, dof):
 def _find_element(x, nodes, elements):
     elt_id = -1
     for iE, elt in enumerate(elements):
-        n1, n2 = elt
-        if x >= nodes[n1] and x <= nodes[n2]:
+        n1, _, _f, n2 = elt
+        if x >= nodes[int(n1/3)] and x <= nodes[int(n2/3)]:
             elt_id = iE
             break
     return elt_id
@@ -292,7 +292,8 @@ def _find_element(x, nodes, elements):
 
 def fe_interpolate(nodes, elements, dof, x):
     elt_id = _find_element(x, nodes, elements)
-    n1, n2 = elements[elt_id]
+    n1, _, _f, n2 = elements[elt_id]
+    n1, n2 = int(n1/3), int(n2/3)
     he = nodes[n2] - nodes[n1]
     uh = dof[n1] + (dof[n2] - dof[n1])*(x - nodes[n1])/he
     return uh
@@ -309,7 +310,7 @@ if __name__ == "__main__":
     n_quad = 3
     n_test = 101
 
-    n_elts = np.array([10])
+    n_elts = np.array([25])
     errs_L2 = []
     for n_elt in n_elts:
         nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
@@ -317,12 +318,14 @@ if __name__ == "__main__":
         print(elements)
         uh = solve_bvp(nodes, elements, dbc, n_quad)
     
-    uh = uh[::3]
+    
     print(f"uh = {uh}")
     ua = np.zeros(np.shape(uh)[0]+2)
     ua[1:-1] = uh
+    ua = ua[::3]
     print(f"ua = {ua}")
     x = np.linspace(0,1,n_elts[0]+1)
+    print(x)
 
     plt.plot(x, ua)
     plt.xlabel('x')
@@ -330,4 +333,4 @@ if __name__ == "__main__":
     
     plt.show()
     
-    plot_fem_soln(nodes, elements, uh)
+    plot_fem_soln(nodes[::3], elements, uh)
