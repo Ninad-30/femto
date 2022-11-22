@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import coo_matrix
+import test_fem_convergence_modular
 
 pi = np.pi
 

@@ -337,7 +337,7 @@ def find_element_new(x, nodes, elements):
     return elt_id
 
 def fe_interpolate_unarranged(nodes, elements, dof, x, n_quad = 100):
-    elt_id = _find_element(x, nodes, elements)
+    elt_id = find_element_new(x, nodes, elements)
     n1, _, n2 = elements[elt_id]
     n1, n2 = int(n1/2), int(n2/2)
     he = dof[n2] - dof[n1]
@@ -347,7 +347,7 @@ def fe_interpolate_unarranged(nodes, elements, dof, x, n_quad = 100):
 if __name__ == "__main__":
     n_quad = 3
     n_test = 101
-    n_elts = np.array([4])
+    n_elts = np.array([i*i for i in range(5, 20)])
     errs_L2 = []
     for n_elt in n_elts:
         nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
@@ -358,27 +358,27 @@ if __name__ == "__main__":
         x = np.linspace(0, 1, n_elts[0] + 2)
         ua[1:-1] = uh
         ua = ua[::2]
-        # errs_L2.append(compute_L2_error(nodes, elements, ua[::2], n_test))
+        errs_L2.append(compute_L2_error(nodes, elements, ua, n_test))
     
     errs_L2 = np.array(errs_L2)
     print('ua = ', ua[::2])
     print(u_exact(nodes))
-    # plt.loglog(1/n_elts, errs_L2, 'ko-', lw=2, label='FEM')
-    # plt.loglog(1/n_elts, (1/n_elts)**2, 'ro--', lw=2, label='h^2')
-    # plt.xlabel('Mesh size (h)')
-    # plt.ylabel('L2 error')
-    # plt.legend()
-    # plt.show()
-    # n_elts = np.array([3])
-    # errs_L2 = []
-    # for n_elt in n_elts:
-    #     nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
-    #     # print(nodes)
-    #     # print(elements)
-    #     uh = solve_bvp(nodes, elements, dbc, n_quad)
-    #     print(f"uh = {uh}, shape of uh = {uh.shape}")
+    plt.loglog(1/n_elts, errs_L2, 'ko-', lw=2, label='FEM')
+    plt.loglog(1/n_elts, (1/n_elts)**2, 'ro--', lw=2, label='h^2')
+    plt.xlabel('Mesh size (h)')
+    plt.ylabel('L2 error')
+    plt.legend()
+    plt.show()
+    n_elts = np.array([3])
+    errs_L2 = []
+    for n_elt in n_elts:
+        nodes, elements, dbc = create_mesh_1d_uniform(n_elt)
+        # print(nodes)
+        # print(elements)
+        uh = solve_bvp(nodes, elements, dbc, n_quad)
+        print(f"uh = u{uh}, shape of uh = {uh.shape}")
     
-    # print(fe_interpolate_unarranged(nodes, elements, uh, 0.5))
+    print(fe_interpolate_unarranged(nodes, elements, uh, 0.5))
     
     
     print(f"ua = {ua}")
